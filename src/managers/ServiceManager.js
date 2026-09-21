@@ -79,7 +79,6 @@ class ServiceManager {
       return { error: `No existe un servicio con id ${id}` };
     }
 
-    // Se descarta cualquier intento de modificar el id
     const { id: _ignoredId, ...safeData } = updatedData;
 
     this.services[index] = { ...this.services[index], ...safeData };
