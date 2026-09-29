@@ -20,7 +20,7 @@ class ServiceManager {
     this.services = this.#loadServices();
   }
 
-  // ---- Persistencia interna ----
+  // Persistencia interna
 
   #loadServices() {
     const raw = fs.readFileSync(DATA_PATH, "utf-8");
@@ -37,7 +37,7 @@ class ServiceManager {
       : 1;
   }
 
-  // ---- API pública ----
+  // API pública
 
   getServices() {
     return this.services;

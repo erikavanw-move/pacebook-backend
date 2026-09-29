@@ -52,7 +52,7 @@ Los datos se guardan en `src/data/services.json` y
 }
 
 
-| Método | Ruta                 | Comportamiento                                                                      |
+| Método | Ruta                  | Comportamiento |
 | POST   | `/api/bookings` | Crea una reserva. Puede iniciarse con `services` vacío. `201` si se crea, `400` si faltan  campos |
 | GET    | `/api/bookings/:bid`  | Devuelve una reserva por id. `200` si existe, `404` si no  |
 | POST   | `/api/bookings/:bid/services/:sid`   | Agrega un servicio a una reserva existente. Si ya estaba, incrementa `quantity`. `200` si ambos existen, `404` si la reserva o el servicio no existen |
@@ -63,7 +63,7 @@ Los datos se guardan en `src/data/services.json` y
 # Crear una reserva vacía
 curl -X POST http://localhost:8080/api/bookings \
   -H "Content-Type: application/json" \
-  -d '{"clientName":"Ana García","clientEmail":"ana@email.com","date":"2026-09-25","time":"09:00"}'
+  -d '{"clientName":"Ana García","clientEmail":"ana@gmail.com","date":"2026-09-25","time":"09:00"}'
 
 # Ver una reserva
 curl http://localhost:8080/api/bookings/1

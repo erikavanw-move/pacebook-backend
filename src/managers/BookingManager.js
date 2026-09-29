@@ -13,7 +13,7 @@ class BookingManager {
     this.bookings = this.#loadBookings();
   }
 
-  // ---- Persistencia interna ----
+  // Persistencia interna
 
   #loadBookings() {
     const raw = fs.readFileSync(DATA_PATH, "utf-8");
@@ -30,7 +30,7 @@ class BookingManager {
       : 1;
   }
 
-  // ---- API pública ----
+  // API pública
 
   getBookings() {
     return this.bookings;
