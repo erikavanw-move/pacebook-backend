@@ -1,21 +1,51 @@
 # Sistema Backend de Turnos y Reservas — Pacebook
 
-API REST con Node.js, Express y persistencia en archivos JSON (FileSystem)
-para los recursos `services` y `bookings`.
+API REST con Node.js, Express y persistencia en archivos JSON (FileSystem),
+organizada en tres capas: **routes → controllers → managers**.
 
 
 ## Variables de entorno
 
-Archivo `.env` en la raíz (podés copiar `.env.example`):
+Creá un archivo `.env` en la raíz (podés copiar `.env.example`):
 
+```
 PORT=8080
 NODE_ENV=development
+```
 
 ## Ejecución
 
-Levanta el servidor en `http://localhost:8080` 
-Los datos se guardan en `src/data/services.json` y
-`src/data/bookings.json`, no se pierden al reiniciar el servidor.
+Levanta el servidor en `http://localhost:8080`
+Los datos persisten en `src/data/services.json` y `src/data/bookings.json`.
+
+## Arquitectura
+
+Esta entrega reorganiza el código existente en tres capas con responsabilidades separadas.
+
+- **`src/routes/`** — define los endpoints y los conecta con su controller. No contiene lógica de negocio ni acceso a archivos.
+- **`src/controllers/`** — lee `req.params`, `req.query` y `req.body`, llama al manager correspondiente y responde con `res.status().json()`. No accede a los archivos JSON directamente.
+- **`src/managers/`** — maneja la lógica de datos y la persistencia en JSON, con lecturas y escrituras asíncronas (`fs/promises` + `async/await`). Nunca usa `req` ni `res`.
+- **`src/app.js`** — configura Express, sin lógica de negocio.
+- **`src/server.js`** — arranca el servidor, leyendo el puerto desde `.env`.
+
+src/
+├── config/
+│   └── env.config.js
+├── controllers/
+│   ├── services.controller.js
+│   └── bookings.controller.js
+├── managers/
+│   ├── ServiceManager.js
+│   └── BookingManager.js
+├── routes/
+│   ├── services.router.js
+│   └── bookings.router.js
+├── data/
+│   ├── services.json
+│   └── bookings.json
+├── app.js
+└── server.js
+
 
 ## Recurso `services`
 
@@ -29,8 +59,8 @@ Los datos se guardan en `src/data/services.json` y
   "available": true
 }
 
-
 | Método | Ruta                 | Comportamiento                                                                      |
+| ------ | -------------------- | ------------------------------------------------------------------------------------ |
 | GET    | `/api/services`      | Devuelve todos los servicios. Filtros opcionales: `?category=cardio`, `?available=true` |
 | GET    | `/api/services/:sid` | Devuelve un servicio por id. `200` si existe, `404` si no                            |
 | POST   | `/api/services`      | Crea un servicio. `id` generado automáticamente. `201` si se crea, `400` si faltan campos |
@@ -51,33 +81,7 @@ Los datos se guardan en `src/data/services.json` y
   ]
 }
 
-
-| Método | Ruta                  | Comportamiento |
-| POST   | `/api/bookings` | Crea una reserva. Puede iniciarse con `services` vacío. `201` si se crea, `400` si faltan  campos |
-| GET    | `/api/bookings/:bid`  | Devuelve una reserva por id. `200` si existe, `404` si no  |
-| POST   | `/api/bookings/:bid/services/:sid`   | Agrega un servicio a una reserva existente. Si ya estaba, incrementa `quantity`. `200` si ambos existen, `404` si la reserva o el servicio no existen |
-
-
-### Ejemplos
-
-# Crear una reserva vacía
-curl -X POST http://localhost:8080/api/bookings \
-  -H "Content-Type: application/json" \
-  -d '{"clientName":"Ana García","clientEmail":"ana@gmail.com","date":"2026-09-25","time":"09:00"}'
-
-# Ver una reserva
-curl http://localhost:8080/api/bookings/1
-
-# Agregar el servicio con id 1 a la reserva 1
-curl -X POST http://localhost:8080/api/bookings/1/services/1
-
-
-## Arquitectura
-
-- `src/config/env.config.js` — valida y expone las variables de entorno
-- `src/managers/ServiceManager.js` — lógica de negocio del recurso `services`, persiste en `services.json`
-- `src/managers/BookingManager.js` — lógica de negocio del recurso `bookings`, persiste en `bookings.json`
-- `src/routes/services.router.js` — rutas de `services` con `express.Router()`
-- `src/routes/bookings.router.js` — rutas de `bookings` con `express.Router()`; valida contra `ServiceManager` que el servicio exista antes de agregarlo a una reserva
-- `src/app.js` — configura la app de Express
-- `src/server.js` — arranca el servidor, leyendo el puerto desde `.env`
+| Método | Ruta                                | Comportamiento    |
+| POST   | `/api/bookings`                     | Crea una reserva. Puede iniciarse con `services` vacío. `201` si se crea, `400` si faltan campos.
+| GET    | `/api/bookings/:bid`                | Devuelve una reserva por id. `200` si existe, `404` si no.
+| POST   | `/api/bookings/:bid/services/:sid`   | Agrega un servicio a una reserva existente. Si ya estaba, incrementa `quantity`. `200` si ambos existen, `404` si la reserva o el servicio no existen.

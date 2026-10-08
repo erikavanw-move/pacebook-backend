@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "name": "Yoga",
-    "description": "Clases de yoga para mejorar flexibilidad y concentración.",
+    "name": "Running",
+    "description": "Mejorá tu técnica de carrera con entrenadores especializados.",
     "duration": 60,
-    "price": 4000,
-    "category": "movilidad",
+    "price": 5000,
+    "category": "cardio",
     "available": true
   },
   {

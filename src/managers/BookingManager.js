@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -9,39 +9,36 @@ const DATA_PATH = path.join(__dirname, "..", "data", "bookings.json");
 const REQUIRED_FIELDS = ["clientName", "clientEmail", "date", "time"];
 
 class BookingManager {
-  constructor() {
-    this.bookings = this.#loadBookings();
-  }
+  // Persistencia interna (asíncrona)
 
-  // Persistencia interna
-
-  #loadBookings() {
-    const raw = fs.readFileSync(DATA_PATH, "utf-8");
+  async #readBookings() {
+    const raw = await fs.readFile(DATA_PATH, "utf-8");
     return JSON.parse(raw);
   }
 
-  #saveBookings() {
-    fs.writeFileSync(DATA_PATH, JSON.stringify(this.bookings, null, 2));
+  async #writeBookings(bookings) {
+    await fs.writeFile(DATA_PATH, JSON.stringify(bookings, null, 2));
   }
 
-  #generateId() {
-    return this.bookings.length > 0
-      ? Math.max(...this.bookings.map((b) => b.id)) + 1
+  #generateId(bookings) {
+    return bookings.length > 0
+      ? Math.max(...bookings.map((b) => b.id)) + 1
       : 1;
   }
 
   // API pública
 
-  getBookings() {
-    return this.bookings;
+  async getBookings() {
+    return await this.#readBookings();
   }
 
-  getBookingById(id) {
-    const booking = this.bookings.find((b) => b.id === Number(id));
+  async getBookingById(id) {
+    const bookings = await this.#readBookings();
+    const booking = bookings.find((b) => b.id === Number(id));
     return booking || { error: `No existe una reserva con id ${id}` };
   }
 
-  createBooking(bookingData) {
+  async createBooking(bookingData) {
     const missing = REQUIRED_FIELDS.filter(
       (field) => bookingData[field] === undefined
     );
@@ -50,8 +47,10 @@ class BookingManager {
       return { error: `Faltan campos requeridos: ${missing.join(", ")}` };
     }
 
+    const bookings = await this.#readBookings();
+
     const newBooking = {
-      id: this.#generateId(),
+      id: this.#generateId(bookings),
       clientName: bookingData.clientName,
       clientEmail: bookingData.clientEmail,
       date: bookingData.date,
@@ -60,19 +59,20 @@ class BookingManager {
       services: Array.isArray(bookingData.services) ? bookingData.services : [],
     };
 
-    this.bookings.push(newBooking);
-    this.#saveBookings();
+    bookings.push(newBooking);
+    await this.#writeBookings(bookings);
     return newBooking;
   }
 
-  addServiceToBooking(bookingId, serviceId) {
-    const index = this.bookings.findIndex((b) => b.id === Number(bookingId));
+  async addServiceToBooking(bookingId, serviceId) {
+    const bookings = await this.#readBookings();
+    const index = bookings.findIndex((b) => b.id === Number(bookingId));
 
     if (index === -1) {
       return { error: `No existe una reserva con id ${bookingId}` };
     }
 
-    const booking = this.bookings[index];
+    const booking = bookings[index];
     const sid = Number(serviceId);
     const existente = booking.services.find((s) => s.service === sid);
 
@@ -82,7 +82,7 @@ class BookingManager {
       booking.services.push({ service: sid, quantity: 1 });
     }
 
-    this.#saveBookings();
+    await this.#writeBookings(bookings);
     return booking;
   }
 }

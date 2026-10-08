@@ -1,7 +1,7 @@
 {
   "name": "pacebook-backend",
   "version": "1.0.0",
-  "description": "API REST con Node.js, Express y FileSystem para el Sistema Backend de Turnos y Reservas de Pacebook (recursos services y bookings)",
+  "description": "API REST con Node.js, Express y FileSystem para el Sistema Backend de Turnos y Reservas de Pacebook, organizada en routers, controllers y managers",
   "type": "module",
   "main": "src/server.js",
   "scripts": {

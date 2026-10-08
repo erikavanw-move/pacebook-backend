@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -16,39 +16,36 @@ const REQUIRED_FIELDS = [
 ];
 
 class ServiceManager {
-  constructor() {
-    this.services = this.#loadServices();
-  }
+  // Persistencia interna (asíncrona)
 
-  // Persistencia interna
-
-  #loadServices() {
-    const raw = fs.readFileSync(DATA_PATH, "utf-8");
+  async #readServices() {
+    const raw = await fs.readFile(DATA_PATH, "utf-8");
     return JSON.parse(raw);
   }
 
-  #saveServices() {
-    fs.writeFileSync(DATA_PATH, JSON.stringify(this.services, null, 2));
+  async #writeServices(services) {
+    await fs.writeFile(DATA_PATH, JSON.stringify(services, null, 2));
   }
 
-  #generateId() {
-    return this.services.length > 0
-      ? Math.max(...this.services.map((s) => s.id)) + 1
+  #generateId(services) {
+    return services.length > 0
+      ? Math.max(...services.map((s) => s.id)) + 1
       : 1;
   }
 
   // API pública
 
-  getServices() {
-    return this.services;
+  async getServices() {
+    return await this.#readServices();
   }
 
-  getServiceById(id) {
-    const service = this.services.find((s) => s.id === Number(id));
+  async getServiceById(id) {
+    const services = await this.#readServices();
+    const service = services.find((s) => s.id === Number(id));
     return service || { error: `No existe un servicio con id ${id}` };
   }
 
-  addService(serviceData) {
+  async addService(serviceData) {
     const missing = REQUIRED_FIELDS.filter(
       (field) => serviceData[field] === undefined
     );
@@ -57,8 +54,10 @@ class ServiceManager {
       return { error: `Faltan campos requeridos: ${missing.join(", ")}` };
     }
 
+    const services = await this.#readServices();
+
     const newService = {
-      id: this.#generateId(),
+      id: this.#generateId(services),
       name: serviceData.name,
       description: serviceData.description,
       duration: serviceData.duration,
@@ -67,13 +66,14 @@ class ServiceManager {
       available: serviceData.available,
     };
 
-    this.services.push(newService);
-    this.#saveServices();
+    services.push(newService);
+    await this.#writeServices(services);
     return newService;
   }
 
-  updateService(id, updatedData) {
-    const index = this.services.findIndex((s) => s.id === Number(id));
+  async updateService(id, updatedData) {
+    const services = await this.#readServices();
+    const index = services.findIndex((s) => s.id === Number(id));
 
     if (index === -1) {
       return { error: `No existe un servicio con id ${id}` };
@@ -81,20 +81,21 @@ class ServiceManager {
 
     const { id: _ignoredId, ...safeData } = updatedData;
 
-    this.services[index] = { ...this.services[index], ...safeData };
-    this.#saveServices();
-    return this.services[index];
+    services[index] = { ...services[index], ...safeData };
+    await this.#writeServices(services);
+    return services[index];
   }
 
-  deleteService(id) {
-    const index = this.services.findIndex((s) => s.id === Number(id));
+  async deleteService(id) {
+    const services = await this.#readServices();
+    const index = services.findIndex((s) => s.id === Number(id));
 
     if (index === -1) {
       return { error: `No existe un servicio con id ${id}` };
     }
 
-    const [deleted] = this.services.splice(index, 1);
-    this.#saveServices();
+    const [deleted] = services.splice(index, 1);
+    await this.#writeServices(services);
     return deleted;
   }
 }
