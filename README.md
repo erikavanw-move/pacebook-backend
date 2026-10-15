@@ -1,32 +1,50 @@
 # Sistema Backend de Turnos y Reservas — Pacebook
 
-API REST con Node.js, Express y persistencia en archivos JSON (FileSystem),
-organizada en tres capas: **routes → controllers → managers**.
-
+API REST con Node.js, Express y persistencia en archivos JSON, organizada en
+una **arquitectura en capas**: router → controller → service → repository → DAO.
 
 ## Variables de entorno
 
 Creá un archivo `.env` en la raíz (podés copiar `.env.example`):
 
-```
 PORT=8080
 NODE_ENV=development
-```
 
 ## Ejecución
 
 Levanta el servidor en `http://localhost:8080`
 Los datos persisten en `src/data/services.json` y `src/data/bookings.json`.
 
-## Arquitectura
+## Arquitectura en capas
 
-Esta entrega reorganiza el código existente en tres capas con responsabilidades separadas.
+Cada request atraviesa las capas en este orden, y cada capa solo habla con la
+que tiene inmediatamente debajo:
 
-- **`src/routes/`** — define los endpoints y los conecta con su controller. No contiene lógica de negocio ni acceso a archivos.
-- **`src/controllers/`** — lee `req.params`, `req.query` y `req.body`, llama al manager correspondiente y responde con `res.status().json()`. No accede a los archivos JSON directamente.
-- **`src/managers/`** — maneja la lógica de datos y la persistencia en JSON, con lecturas y escrituras asíncronas (`fs/promises` + `async/await`). Nunca usa `req` ni `res`.
-- **`src/app.js`** — configura Express, sin lógica de negocio.
-- **`src/server.js`** — arranca el servidor, leyendo el puerto desde `.env`.
+Router → Controller → Service → Repository → DAO → archivo JSON
+
+| Capa           | Carpeta             | Responsabilidad                                                                 |
+| -------------- | ------------------- | -------------------------------------------------------------------------------- |
+| **Router**     | `src/routes/`       | Define los endpoints y los conecta con su controller. Sin lógica.                |
+| **Controller** | `src/controllers/`  | Lee `req` (params, query, body), llama al service y responde con `res.status().json()`. |
+| **Service**    | `src/services/`     | Contiene las reglas de negocio (validaciones, filtros, `quantity`). No conoce `req` ni `res`. |
+| **Repository** | `src/repositories/` | Ofrece métodos de acceso a datos (`getAll`, `getById`, `create`, ...). Sin reglas de negocio. |
+| **DAO**        | `src/dao/`          | Lee y escribe directamente en el archivo JSON. Sin lógica de negocio.            |
+
+### Por qué esta separación
+
+- Cambiar **cómo se guardan** los datos (ejemplo, pasar de JSON a MongoDB) solo afecta al DAO (y eventualmente al repository).
+- Las **reglas de negocio** viven en un único lugar (los services), sin mezclarse con HTTP ni con archivos.
+- Cada capa se puede entender, probar y modificar por separado.
+
+### Dónde está cada regla de negocio
+
+- Validación de campos requeridos al crear servicios y reservas → `services.service.js` / `bookings.service.js`
+- El `id` nunca se toma del body → `services.service.js`
+- Filtros `?category=` y `?available=` → `services.service.js`
+- Si un servicio se agrega dos veces a una reserva, se incrementa `quantity` → `bookings.service.js`
+- Validar que existan la reserva y el servicio antes de agregarlo → `bookings.service.js`
+
+### Estructura
 
 src/
 ├── config/
@@ -34,9 +52,15 @@ src/
 ├── controllers/
 │   ├── services.controller.js
 │   └── bookings.controller.js
-├── managers/
-│   ├── ServiceManager.js
-│   └── BookingManager.js
+├── services/
+│   ├── services.service.js
+│   └── bookings.service.js
+├── repositories/
+│   ├── services.repository.js
+│   └── bookings.repository.js
+├── dao/
+│   ├── services.dao.js
+│   └── bookings.dao.js
 ├── routes/
 │   ├── services.router.js
 │   └── bookings.router.js
@@ -47,7 +71,15 @@ src/
 └── server.js
 
 
-## Recurso `services`
+### Funciones por capa
+
+| Recurso    | Controller y Service         | Repository y DAO       |
+| `services` | `getServices`, `getServiceById`, `createService`, `updateService`, `deleteService` | `getAll`, `getById`, `create`, `update`, `delete` |
+| `bookings` | `createBooking`, `getBookingById`, `addServiceToBooking`   | `create`, `getById`, `update`    |
+
+## Endpoints
+
+### `services`
 
 {
   "id": 1,
@@ -59,6 +91,7 @@ src/
   "available": true
 }
 
+
 | Método | Ruta                 | Comportamiento                                                                      |
 | ------ | -------------------- | ------------------------------------------------------------------------------------ |
 | GET    | `/api/services`      | Devuelve todos los servicios. Filtros opcionales: `?category=cardio`, `?available=true` |
@@ -67,7 +100,7 @@ src/
 | PUT    | `/api/services/:sid` | Actualiza un servicio. No permite modificar el `id`. `200` si existe, `404` si no    |
 | DELETE | `/api/services/:sid` | Elimina un servicio. `200` si existe, `404` si no                                    |
 
-## Recurso `bookings`
+### `bookings`
 
 {
   "id": 1,
@@ -81,7 +114,8 @@ src/
   ]
 }
 
-| Método | Ruta                                | Comportamiento    |
-| POST   | `/api/bookings`                     | Crea una reserva. Puede iniciarse con `services` vacío. `201` si se crea, `400` si faltan campos.
-| GET    | `/api/bookings/:bid`                | Devuelve una reserva por id. `200` si existe, `404` si no.
-| POST   | `/api/bookings/:bid/services/:sid`   | Agrega un servicio a una reserva existente. Si ya estaba, incrementa `quantity`. `200` si ambos existen, `404` si la reserva o el servicio no existen.
+
+| Método | Ruta                          |Comportamiento    |
+| POST   | `/api/bookings`               | Crea una reserva. Puede iniciarse con `services` vacío. `201` si se crea, `400` si faltan campos |
+| GET    | `/api/bookings/:bid`          | Devuelve una reserva por id. `200` si existe, `404` si no |
+| POST   | `/api/bookings/:bid/services/:sid` | Agrega un servicio a una reserva existente. Si ya estaba, incrementa `quantity`. `200` si ambos existen, `404` si la reserva o el servicio no existen |

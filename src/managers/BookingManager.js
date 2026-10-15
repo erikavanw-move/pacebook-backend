@@ -26,7 +26,6 @@ class BookingManager {
       : 1;
   }
 
-  // API pública
 
   async getBookings() {
     return await this.#readBookings();

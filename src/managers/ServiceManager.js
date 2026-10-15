@@ -33,7 +33,6 @@ class ServiceManager {
       : 1;
   }
 
-  // API pública
 
   async getServices() {
     return await this.#readServices();
