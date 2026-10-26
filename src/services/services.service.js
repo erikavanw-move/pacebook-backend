@@ -14,6 +14,7 @@ class ServicesService {
     this.repository = new ServicesRepository();
   }
 
+
   async getServices(filters = {}) {
     let services = await this.repository.getAll();
     const { category, available } = filters;
@@ -63,7 +64,7 @@ class ServicesService {
       return { error: `No existe un servicio con id ${id}` };
     }
 
-    const { id: _ignoredId, ...safeData } = updatedData;
+    const { id: _ignoredId, _id: _ignoredId2, ...safeData } = updatedData;
 
     return await this.repository.update(id, { ...existing, ...safeData });
   }

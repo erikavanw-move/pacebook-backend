@@ -1,5 +1,6 @@
 import BookingsDAO from "../dao/bookings.dao.js";
 
+
 class BookingsRepository {
   constructor() {
     this.dao = new BookingsDAO();
