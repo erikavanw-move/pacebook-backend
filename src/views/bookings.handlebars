@@ -1,0 +1,20 @@
+<h1>Reservas</h1>
+<p class="sub">Se actualiza sola cuando se crea una reserva o se le agrega un servicio (por ejemplo desde Postman).</p>
+
+<div id="bookings-list" class="grid">
+  {{#each bookings}}
+  <article class="card booking" data-id="{{this.id}}">
+    <h2>{{this.clientName}}</h2>
+    <p class="meta">{{this.clientEmail}}</p>
+    <p class="meta">{{this.date}} · {{this.time}} <span class="badge">{{this.status}}</span></p>
+    <ul>
+      {{#each this.services}}
+      <li>{{this.service.name}} × {{this.quantity}}</li>
+      {{else}}
+      <li class="empty">Sin servicios todavía</li>
+      {{/each}}
+    </ul>
+  </article>
+  {{/each}}
+</div>
+<p id="bookings-empty" class="empty" {{#if bookings.length}}hidden{{/if}}>No hay reservas cargadas.</p>

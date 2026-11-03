@@ -1,0 +1,40 @@
+<h1>Servicios</h1>
+<p class="sub">Listado en tiempo real: se actualiza solo cuando se crea, modifica o elimina un servicio.</p>
+
+<form id="service-form" class="card form">
+  <h2>Nuevo servicio</h2>
+  <input name="name" placeholder="Nombre" required>
+  <input name="description" placeholder="Descripción" required>
+  <input name="duration" type="number" min="1" placeholder="Duración (min)" required>
+  <input name="price" type="number" min="0" placeholder="Precio" required>
+  <input name="category" placeholder="Categoría" required>
+  <label class="check"><input name="available" type="checkbox" checked> Disponible</label>
+  <button type="submit">Crear servicio</button>
+  <span id="form-error" class="error"></span>
+</form>
+
+<table class="card" id="services-table">
+  <thead>
+    <tr>
+      <th>Nombre</th><th>Descripción</th><th>Duración</th><th>Precio</th>
+      <th>Categoría</th><th>Disponibilidad</th><th></th>
+    </tr>
+  </thead>
+  <tbody id="services-body">
+    {{#each services}}
+    <tr data-id="{{this.id}}" data-available="{{this.available}}">
+      <td class="c-name">{{this.name}}</td>
+      <td class="c-description">{{this.description}}</td>
+      <td class="c-duration">{{this.duration}} min</td>
+      <td class="c-price">${{this.price}}</td>
+      <td class="c-category">{{this.category}}</td>
+      <td class="c-available"><span class="badge {{#if this.available}}ok{{else}}no{{/if}}">{{#if this.available}}Disponible{{else}}No disponible{{/if}}</span></td>
+      <td class="actions">
+        <button class="toggle" type="button">Cambiar disponibilidad</button>
+        <button class="delete danger" type="button">Eliminar</button>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+<p id="services-empty" class="empty" {{#if services.length}}hidden{{/if}}>No hay servicios cargados.</p>

@@ -30,7 +30,7 @@ class ServicesDAO {
     return doc ? doc.toObject() : null;
   }
 
-  // Idem que id y data
+  // Devuelve el registro eliminado, o null si no existe
   async delete(id) {
     if (!mongoose.isObjectIdOrHexString(id)) return null;
     const doc = await Service.findByIdAndDelete(id);

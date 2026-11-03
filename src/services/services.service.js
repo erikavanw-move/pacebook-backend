@@ -9,12 +9,13 @@ const REQUIRED_FIELDS = [
   "available",
 ];
 
+
 class ServicesService {
   constructor() {
     this.repository = new ServicesRepository();
   }
 
-
+ 
   async getServices(filters = {}) {
     let services = await this.repository.getAll();
     const { category, available } = filters;
@@ -47,6 +48,7 @@ class ServicesService {
       return { error: `Faltan campos requeridos: ${missing.join(", ")}` };
     }
 
+  
     return await this.repository.create({
       name: serviceData.name,
       description: serviceData.description,
@@ -64,6 +66,7 @@ class ServicesService {
       return { error: `No existe un servicio con id ${id}` };
     }
 
+    // Regla de negocio: el id no se puede modificar
     const { id: _ignoredId, _id: _ignoredId2, ...safeData } = updatedData;
 
     return await this.repository.update(id, { ...existing, ...safeData });

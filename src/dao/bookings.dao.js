@@ -2,11 +2,16 @@ import mongoose from "mongoose";
 import Booking from "../models/booking.model.js";
 
 class BookingsDAO {
-  
+ 
   async create(data) {
     const { id: _ignored, _id: _ignored2, ...rest } = data;
     const doc = await Booking.create(rest);
     return doc.toObject();
+  }
+
+  async getAll() {
+    const docs = await Booking.find().populate("services.service");
+    return docs.map((doc) => doc.toObject());
   }
 
   async getById(id) {

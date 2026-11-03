@@ -1,6 +1,5 @@
 import BookingsDAO from "../dao/bookings.dao.js";
 
-
 class BookingsRepository {
   constructor() {
     this.dao = new BookingsDAO();
@@ -8,6 +7,10 @@ class BookingsRepository {
 
   async create(data) {
     return await this.dao.create(data);
+  }
+
+  async getAll() {
+    return await this.dao.getAll();
   }
 
   async getById(id) {

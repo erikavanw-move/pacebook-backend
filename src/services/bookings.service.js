@@ -28,25 +28,28 @@ class BookingsService {
     });
   }
 
+  async getBookings() {
+    return await this.repository.getAll();
+  }
+
   async getBookingById(id) {
     const booking = await this.repository.getById(id);
     return booking || { error: `No existe una reserva con id ${id}` };
   }
 
   async addServiceToBooking(bookingId, serviceId) {
-   
+    
     const booking = await this.repository.getById(bookingId);
     if (!booking) {
       return { error: `No existe una reserva con id ${bookingId}` };
     }
 
-    // Regla: el servicio debe existir (se consulta a la capa de services)
+  
     const service = await this.servicesService.getServiceById(serviceId);
     if (service.error) {
       return { error: service.error };
     }
 
-    // Info clave: si el servicio ya estaba en la reserva, se incrementa quantity.
     const existing = booking.services.find(
       (s) => String(s.service) === service.id
     );

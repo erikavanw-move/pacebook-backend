@@ -1,0 +1,37 @@
+:root { --bg:#f6f7f9; --card:#fff; --text:#1d2330; --muted:#6b7385; --accent:#2f6fed; --ok:#1f9d55; --no:#c0392b; --line:#e3e6ec; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, sans-serif; background:var(--bg); color:var(--text); }
+.topbar { display:flex; align-items:center; gap:24px; padding:14px 24px; background:var(--card); border-bottom:1px solid var(--line); }
+.brand { font-weight:700; font-size:1.2rem; color:var(--accent); }
+nav { display:flex; gap:16px; flex:1; }
+nav a { color:var(--text); text-decoration:none; }
+nav a:hover { color:var(--accent); }
+.conn { font-size:.8rem; padding:3px 10px; border-radius:99px; }
+.conn.on { background:#dff5e8; color:var(--ok); }
+.conn.off { background:#fbe3e0; color:var(--no); }
+main { max-width:1100px; margin:24px auto; padding:0 16px; }
+h1 { margin:0 0 4px; }
+.sub { color:var(--muted); margin:0 0 20px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+table.card { width:100%; border-collapse:collapse; padding:0; overflow:hidden; }
+th, td { text-align:left; padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:middle; }
+th { font-size:.8rem; text-transform:uppercase; color:var(--muted); }
+.badge { font-size:.75rem; padding:2px 8px; border-radius:99px; background:var(--line); }
+.badge.ok { background:#dff5e8; color:var(--ok); }
+.badge.no { background:#fbe3e0; color:var(--no); }
+.form { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:20px; align-items:center; }
+.form h2 { grid-column:1/-1; margin:0; font-size:1.05rem; }
+input { padding:8px 10px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+.check { display:flex; gap:6px; align-items:center; }
+button { padding:8px 12px; border:0; border-radius:6px; background:var(--accent); color:#fff; font:inherit; cursor:pointer; }
+button.danger { background:var(--no); }
+.actions { display:flex; gap:6px; }
+.error { color:var(--no); font-size:.9rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; }
+.booking h2 { margin:0 0 6px; font-size:1.05rem; }
+.meta { margin:2px 0; color:var(--muted); font-size:.9rem; }
+.booking ul { padding-left:18px; margin:10px 0 0; }
+.empty { color:var(--muted); }
+.flash { animation: flash 1.6s ease-out; }
+@keyframes flash { from { background:#fff6c9; } to { background:transparent; } }
+.toast { position:fixed; right:20px; bottom:20px; background:var(--text); color:#fff; padding:10px 16px; border-radius:8px; }
